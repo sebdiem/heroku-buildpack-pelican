@@ -11,6 +11,10 @@ CACHE_DIR=$2
 CACHED_DIRS=".heroku"
 WORKING_DIR=$(pwd)
 
+LOG_FILE='/tmp/node-build-log.txt'
+echo "" > "$LOG_FILE"
+
+
 rm -fr $CACHE_DIR
 mkdir -p $CACHE_DIR
 
