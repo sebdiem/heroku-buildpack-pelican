@@ -46,7 +46,7 @@ install_bins() {
   warn_old_npm
 }
 
-header "Installing npm binaries"
+puts-step "Installing npm binaries"
 install_bins | output "$LOG_FILE"
 
 mkdir -p $BUILD_DIR/local/sbin
