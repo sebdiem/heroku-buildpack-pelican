@@ -11,10 +11,6 @@ CACHE_DIR=$2
 CACHED_DIRS=".heroku"
 WORKING_DIR=$(pwd)
 
-LOG_FILE='/tmp/node-build-log.txt'
-echo "" > "$LOG_FILE"
-
-
 rm -fr $CACHE_DIR
 mkdir -p $CACHE_DIR
 
@@ -24,34 +20,6 @@ PYTHON_STACK="cedar-14"
 NGINX_VERSION="nginx-1.7.2"
 PCRE_VERSION='pcre-8.36'
 source $BIN_DIR/utils
-
-install_bins() {
-  local node_engine=$(read_json "$BUILD_DIR/package.json" ".engines.node")
-  local iojs_engine=$(read_json "$BUILD_DIR/package.json" ".engines.iojs")
-  local npm_engine=$(read_json "$BUILD_DIR/package.json" ".engines.npm")
-
-  if [ -n "$iojs_engine" ]; then
-    echo "engines.iojs (package.json):  $iojs_engine (iojs)"
-  else
-    echo "engines.node (package.json):  ${node_engine:-unspecified}"
-  fi
-  echo "engines.npm (package.json):   ${npm_engine:-unspecified (use default)}"
-  echo ""
-
-  if [ -n "$iojs_engine" ]; then
-    warn_node_engine "$iojs_engine"
-    install_iojs "$iojs_engine" "$BUILD_DIR/.heroku/node"
-    echo "Using bundled npm version for iojs compatibility: `npm --version`"
-  else
-    warn_node_engine "$node_engine"
-    install_nodejs "$node_engine" "$BUILD_DIR/.heroku/node"
-    install_npm "$npm_engine" "$BUILD_DIR/.heroku/node"
-  fi
-  warn_old_npm
-}
-
-puts-step "Installing npm binaries"
-install_bins | output "$LOG_FILE"
 
 mkdir -p $BUILD_DIR/local/sbin
 
@@ -98,7 +66,9 @@ else
   exit 1
 fi
 
-make html
+export PATH=/app/.heroku/node/bin:$PATH
+NODE_DIR=$(npm root)
+make clean html
 
 puts-step "Installing pcre ($PCRE_VERSION)"
 if [[ ! -d "$CACHE_DIR/$PCRE_VERSION" ]]; then
